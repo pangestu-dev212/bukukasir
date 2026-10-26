@@ -3,6 +3,27 @@ export type TransactionScope = 'BUSINESS' | 'PERSONAL';
 export type DebtType = 'RECEIVABLE' | 'PAYABLE';
 export type DebtStatus = 'BELUM_LUNAS' | 'SEBAGIAN' | 'LUNAS';
 
+export type DateFilterMode = 'TODAY' | 'YESTERDAY' | 'LAST_7' | 'THIS_MONTH' | 'CUSTOM';
+
+export interface DateFilter {
+  mode: DateFilterMode;
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+}
+
+export type UserProfile = StoreProfile;
+
+export interface StoreProfile {
+  id: string;
+  storeName: string;
+  ownerName?: string;
+  phone?: string;
+  pin?: string;
+  businessType: string;
+  isCloudSynced?: boolean;
+  createdAt: string;
+}
+
 export interface CategoryItem {
   id: string;
   name: string;
@@ -14,6 +35,7 @@ export interface CategoryItem {
 
 export interface TransactionItem {
   id: string;
+  storeId?: string;
   type: TransactionType;
   scope: TransactionScope; // 'BUSINESS' (Usaha) | 'PERSONAL' (Pribadi)
   amount: number;
@@ -32,9 +54,10 @@ export interface DebtPaymentLog {
 
 export interface DebtItem {
   id: string;
+  storeId?: string;
   personName: string;
   personPhone?: string;
-  type: DebtType; // 'RECEIVABLE' = Pelanggan Kasbon (Piutang), 'PAYABLE' = Utang ke Suplier
+  type: DebtType; // 'RECEIVABLE' = Kasbon Pelanggan, 'PAYABLE' = Utang Suplier
   amount: number;
   paidAmount: number;
   note?: string;
@@ -42,13 +65,6 @@ export interface DebtItem {
   status: DebtStatus;
   history?: DebtPaymentLog[];
   createdAt: string;
-}
-
-export interface UserProfile {
-  storeName: string;
-  ownerName: string;
-  phone?: string;
-  businessType: string;
 }
 
 export const DEFAULT_CATEGORIES: CategoryItem[] = [
@@ -65,7 +81,7 @@ export const DEFAULT_CATEGORIES: CategoryItem[] = [
   { id: 'cat-out-b5', name: 'Plastik, Kemasan & ATK', type: 'OUT', scope: 'BUSINESS', icon: 'Package', color: 'orange' },
   { id: 'cat-out-b6', name: 'Operasional Toko Lainnya', type: 'OUT', scope: 'BUSINESS', icon: 'HelpCircle', color: 'slate' },
 
-  // Pengeluaran Pribadi / Keluarga (Penting agar tidak campur aduk!)
+  // Pengeluaran Pribadi / Keluarga
   { id: 'cat-out-p1', name: 'Belanja Dapur & Makan', type: 'OUT', scope: 'PERSONAL', icon: 'Utensils', color: 'rose' },
   { id: 'cat-out-p2', name: 'Uang Jajan / Anak / Sekolah', type: 'OUT', scope: 'PERSONAL', icon: 'GraduationCap', color: 'purple' },
   { id: 'cat-out-p3', name: 'Bensin & Transport Pribadi', type: 'OUT', scope: 'PERSONAL', icon: 'Fuel', color: 'violet' },
@@ -76,10 +92,11 @@ export const DEFAULT_CATEGORIES: CategoryItem[] = [
 export const BUSINESS_TYPES = [
   { id: 'WARUNG', label: '🏪 Warung Kelontong / Sembako' },
   { id: 'KULINER', label: '🍜 Makanan / Minuman / Cafe' },
-  { id: 'BENGKEL_JASA', label: '🔧 Bengkel / Cuci Kendaraan / Jasa' },
-  { id: 'LAUNDRY', label: '🧺 Laundry / Jasa Setrika' },
+  { id: 'BENGKEL_JASA', label: '🔧 Bengkel / Jasa / Servis' },
+  { id: 'LAUNDRY', label: '🧺 Laundry / Jasa Cuci' },
   { id: 'FASHION', label: '👗 Toko Baju / Hijab / Aksesoris' },
   { id: 'ONLINE_SHOP', label: '📦 Online Shop / Reseller' },
   { id: 'PERTANIAN', label: '🌾 Pertanian / Peternakan' },
+  { id: 'PRIBADI', label: '🏠 Keuangan Rumah Tangga Murni' },
   { id: 'LAINNYA', label: '💼 Usaha Lainnya' },
 ];

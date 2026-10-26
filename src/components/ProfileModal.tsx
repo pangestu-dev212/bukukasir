@@ -25,6 +25,7 @@ export function ProfileModal({ isOpen, profile, onClose, onSave }: ProfileModalP
       return;
     }
     onSave({
+      ...profile,
       storeName: storeName.trim(),
       ownerName: ownerName.trim(),
       businessType,

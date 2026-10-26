@@ -2,13 +2,14 @@
 
 import React, { useState } from 'react';
 import { X, Copy, Check, MessageSquare } from 'lucide-react';
-import { generateDailyWhatsAppReport } from '@/lib/whatsapp';
+import { generateWhatsAppReport } from '@/lib/whatsapp';
 import { TransactionItem } from '@/lib/types';
 
 interface WhatsAppModalProps {
   isOpen: boolean;
   storeName: string;
-  selectedDate: string;
+  startDate: string;
+  endDate: string;
   transactions: TransactionItem[];
   onClose: () => void;
 }
@@ -16,7 +17,8 @@ interface WhatsAppModalProps {
 export function WhatsAppShareModal({
   isOpen,
   storeName,
-  selectedDate,
+  startDate,
+  endDate,
   transactions,
   onClose,
 }: WhatsAppModalProps) {
@@ -24,7 +26,7 @@ export function WhatsAppShareModal({
 
   if (!isOpen) return null;
 
-  const reportText = generateDailyWhatsAppReport(storeName, selectedDate, transactions);
+  const reportText = generateWhatsAppReport(storeName, startDate, endDate, transactions);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(reportText);

@@ -1,18 +1,18 @@
-import { formatRupiah, formatDateIndo } from './formatters';
+import { formatRupiah, formatDateRangeLabel } from './formatters';
+import { TransactionItem } from './types';
 
-export function generateDailyWhatsAppReport(
+export function generateWhatsAppReport(
   storeName: string,
-  dateStr: string,
-  transactions: any[]
+  startDate: string,
+  endDate: string,
+  transactions: TransactionItem[]
 ): string {
-  const filtered = transactions.filter((t) => t.date === dateStr);
-
   // Hitung Totals
   let totalIn = 0;
   let totalOutBusiness = 0;
   let totalOutPersonal = 0;
 
-  filtered.forEach((t) => {
+  transactions.forEach((t) => {
     if (t.type === 'IN') {
       totalIn += t.amount;
     } else if (t.scope === 'BUSINESS') {
@@ -27,7 +27,7 @@ export function generateDailyWhatsAppReport(
   const labaKotorUsaha = totalIn - totalOutBusiness;
 
   let text = `*📊 LAPORAN BUKU KASIR - ${storeName.toUpperCase()}*\n`;
-  text += `📅 Tanggal: ${formatDateIndo(dateStr)}\n`;
+  text += `📅 Periode: ${formatDateRangeLabel(startDate, endDate)}\n`;
   text += `─────────────────────────\n`;
   text += `💰 *Total Uang Masuk:* ${formatRupiah(totalIn)}\n`;
   text += `🏪 *Pengeluaran Usaha/Toko:* ${formatRupiah(totalOutBusiness)}\n`;
@@ -36,21 +36,27 @@ export function generateDailyWhatsAppReport(
   text += `📈 *Hasil Bersih Usaha:* ${formatRupiah(labaKotorUsaha)}\n`;
   text += `💵 *Sisa Uang di Dompet/Kas:* ${formatRupiah(sisaBersihKas)}\n\n`;
 
-  if (filtered.length > 0) {
-    text += `*Rincian Catatan:*\n`;
-    filtered.forEach((item, idx) => {
+  if (transactions.length > 0) {
+    text += `*Rincian Catatan (${transactions.length} transaksi):*\n`;
+    // Ambil maksimal 15 catatan agar tidak kepanjangan di chat
+    const displayList = transactions.slice(0, 15);
+    displayList.forEach((item, idx) => {
       const icon = item.type === 'IN' ? '🟢' : item.scope === 'BUSINESS' ? '🔴' : '🟡';
       const labelScope = item.type === 'IN' ? 'Masuk' : item.scope === 'BUSINESS' ? 'Toko' : 'Pribadi';
-      text += `${idx + 1}. ${icon} [${labelScope}] ${item.categoryName}: ${formatRupiah(item.amount)}\n`;
+      text += `${idx + 1}. ${icon} [${labelScope}] ${item.categoryName}: ${formatRupiah(item.amount)} (${item.date})\n`;
       if (item.note) {
         text += `   _${item.note}_\n`;
       }
     });
+
+    if (transactions.length > 15) {
+      text += `_...dan ${transactions.length - 15} transaksi lainnya._\n`;
+    }
   } else {
-    text += `_Belum ada catatan transaksi pada tanggal ini._\n`;
+    text += `_Belum ada catatan transaksi pada periode ini._\n`;
   }
 
-  text += `\n_Dicatat dengan rapi via BukuKasir UMKM_`;
+  text += `\n_Dicatat rapi via BukuKasir UMKM (Anti Bocor Kasir)_`;
   return text;
 }
 

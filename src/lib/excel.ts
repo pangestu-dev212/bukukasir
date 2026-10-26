@@ -3,7 +3,9 @@ import { TransactionItem } from './types';
 
 export function exportTransactionsToExcel(
   storeName: string,
-  transactions: TransactionItem[]
+  transactions: TransactionItem[],
+  startDate: string,
+  endDate: string
 ): void {
   const rows = transactions.map((t, idx) => ({
     No: idx + 1,
@@ -20,6 +22,7 @@ export function exportTransactionsToExcel(
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Catatan Kas');
 
-  const fileName = `Laporan_Kas_${storeName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
+  const safeStore = storeName.replace(/\s+/g, '_');
+  const fileName = `Laporan_Kas_${safeStore}_${startDate}_sd_${endDate}.xlsx`;
   XLSX.writeFile(workbook, fileName);
 }
