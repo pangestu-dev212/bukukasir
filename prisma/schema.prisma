@@ -1,0 +1,82 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  storeName    String
+  ownerName    String?
+  phone        String?       @unique
+  pin          String?       // PIN 4 digit untuk keamanan sederhana
+  businessType String        @default("WARUNG") // WARUNG, KULINER, JASA, LAUNDRY, FASHION, LAINNYA
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  transactions Transaction[]
+  categories   Category[]
+  debts        DebtBook[]
+
+  @@index([phone])
+}
+
+model Category {
+  id        String        @id @default(cuid())
+  userId    String?       // Null jika kategori bawaan sistem
+  user      User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  type      String        // IN (Uang Masuk), OUT (Uang Keluar)
+  scope     String        @default("BUSINESS") // BUSINESS (Toko/Usaha) atau PERSONAL (Pribadi/Rumah Tangga)
+  icon      String?       // Nama icon Lucide
+  color     String?
+  createdAt DateTime      @default(now())
+
+  transactions Transaction[]
+
+  @@index([userId])
+  @@index([type, scope])
+}
+
+model Transaction {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          String    // IN, OUT
+  scope         String    @default("BUSINESS") // BUSINESS (Toko/Usaha) vs PERSONAL (Pribadi/Dapur)
+  amount        Float
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryName  String?
+  note          String?
+  date          DateTime  @default(now()) // Mendukung tanggal mundur (backdate)
+  paymentMethod String    @default("TUNAI") // TUNAI, TRANSFER, QRIS
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId, date])
+  @@index([userId, type, scope])
+}
+
+model DebtBook {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  personName  String
+  personPhone String?
+  type        String    // RECEIVABLE (Piutang / Kasbon), PAYABLE (Utang Toko / Kulakan)
+  amount      Float
+  paidAmount  Float     @default(0)
+  note        String?
+  dueDate     DateTime?
+  status      String    @default("BELUM_LUNAS") // BELUM_LUNAS, SEBAGIAN, LUNAS
+  history     Json?     // [{ date, amount, note }]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, type])
+}
