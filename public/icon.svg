@@ -1,0 +1,28 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#0d9488"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="8" width="512" height="512" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#047857" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Background Base with Rounded Corners -->
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#bgGrad)"/>
+  <rect x="24" y="24" width="464" height="464" rx="108" stroke="white" stroke-width="4" stroke-opacity="0.2"/>
+
+  <!-- Icon: Store + Book Motif -->
+  <g transform="translate(106, 106)" stroke="white" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Atap Toko -->
+    <path d="M20 100 L150 25 L280 100 Z" fill="white" fill-opacity="0.15"/>
+    <!-- Tiang & Dinding -->
+    <path d="M40 100 L40 260 L260 260 L260 100"/>
+    <!-- Pintu Kasir / Buku -->
+    <path d="M100 260 L100 160 L200 160 L200 260"/>
+    <!-- Simbol Kas / Rupiah / Checkmark -->
+    <circle cx="150" cy="95" r="16" fill="white"/>
+    <path d="M125 210 L145 230 L175 190" stroke="#34d399" stroke-width="20"/>
+  </g>
+</svg>

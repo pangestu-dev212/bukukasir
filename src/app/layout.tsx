@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import { PwaRegister } from '@/components/PwaRegister';
 import './globals.css';
 
 const inter = Inter({
@@ -11,10 +12,16 @@ export const metadata: Metadata = {
   title: 'BukuKasir — Aplikasi Buku Kas & Kasir Warung UMKM',
   description: 'Catat kasir harian, pisahkan kas toko dari dompet dapur, kelola kasbon pelanggan, dan rekap otomatis ke WhatsApp.',
   applicationName: 'BukuKasir',
+  manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'BukuKasir',
+  },
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
 };
 
@@ -35,6 +42,7 @@ export default function RootLayout({
     <html lang="id" className={`h-full antialiased ${inter.className}`}>
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 select-none sm:select-auto">
         {children}
+        <PwaRegister />
       </body>
     </html>
   );
