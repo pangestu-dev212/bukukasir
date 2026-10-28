@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Store, Calendar, Share2, Download, BookOpen, ChevronDown, Pencil, LogOut, User } from 'lucide-react';
+import { Store, Calendar, Share2, Download, BookOpen, ChevronDown, Pencil, LogOut, User, Cloud, RefreshCw } from 'lucide-react';
 import { StoreProfile, DateFilter, DateFilterMode, UserAccount } from '@/lib/types';
 import { formatDateRangeLabel } from '@/lib/formatters';
 
@@ -17,6 +17,8 @@ interface HeaderProps {
   onOpenDebts: () => void;
   onLogout: () => void;
   debtCount: number;
+  isSyncing?: boolean;
+  onTriggerSync?: () => void;
 }
 
 export function Header({
@@ -31,6 +33,8 @@ export function Header({
   onOpenDebts,
   onLogout,
   debtCount,
+  isSyncing,
+  onTriggerSync,
 }: HeaderProps) {
   const handlePresetClick = (mode: DateFilterMode) => {
     const today = new Date().toISOString().split('T')[0];
@@ -138,6 +142,24 @@ export function Header({
               title="Unduh Laporan Excel Periode Ini"
             >
               <Download className="w-4 h-4" />
+            </button>
+
+            {/* Tombol Status Cloud Sync */}
+            <button
+              type="button"
+              onClick={onTriggerSync}
+              disabled={isSyncing}
+              className="p-2 bg-emerald-700/60 hover:bg-emerald-700 rounded-xl text-emerald-100 transition border border-emerald-600/50 flex items-center gap-1 text-xs"
+              title={
+                isSyncing
+                  ? 'Sedang menyinkronkan data ke Cloud Supabase...'
+                  : 'Data tersinkronisasi ke Cloud Supabase (Klik untuk Sinkronkan Sekarang)'
+              }
+            >
+              <Cloud className={`w-4 h-4 ${isSyncing ? 'text-amber-300 animate-pulse' : 'text-emerald-300'}`} />
+              <span className="hidden sm:inline font-semibold text-[11px]">
+                {isSyncing ? 'Sync...' : 'Cloud'}
+              </span>
             </button>
 
             {/* User Account / Logout */}

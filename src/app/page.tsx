@@ -57,6 +57,7 @@ export default function BukuKasirHome() {
   const [isStoreSwitcherOpen, setIsStoreSwitcherOpen] = useState<boolean>(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [storeToEdit, setStoreToEdit] = useState<StoreProfile | null>(null);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   // Load user session on mount
   useEffect(() => {
@@ -76,6 +77,40 @@ export default function BukuKasirHome() {
     setIsClientLoaded(true);
   }, []);
 
+  // Helper sinkronisasi data ke Cloud Supabase
+  const triggerCloudSync = async (
+    targetUser?: UserAccount | null,
+    targetStore?: StoreProfile,
+    txList?: TransactionItem[],
+    debtList?: DebtItem[]
+  ) => {
+    const user = targetUser !== undefined ? targetUser : currentUser;
+    if (!user || user.id === 'tenant-admin') return;
+
+    const store = targetStore || activeStore;
+    const curTx = txList || transactions;
+    const curDebts = debtList || debts;
+
+    setIsSyncing(true);
+    try {
+      await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          username: user.username,
+          profile: store,
+          transactions: curTx,
+          debts: curDebts,
+        }),
+      });
+    } catch (err) {
+      console.warn('Sync to cloud offline/failed:', err);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // Helper untuk memuat data toko & transaksi sesuai user aktif
   const loadTenantData = (user: UserAccount) => {
     const storeList = LocalStore.getStores();
@@ -84,8 +119,51 @@ export default function BukuKasirHome() {
     const active = LocalStore.getActiveStore();
     setActiveStore(active);
 
-    setTransactions(LocalStore.getTransactions(active.id));
-    setDebts(LocalStore.getDebts(active.id));
+    const localTx = LocalStore.getTransactions(active.id);
+    const localDebts = LocalStore.getDebts(active.id);
+    setTransactions(localTx);
+    setDebts(localDebts);
+
+    // Ambil data terbaru dari Cloud Supabase jika pengguna terdaftar
+    if (user.id && !user.id.startsWith('tenant-admin')) {
+      setIsSyncing(true);
+      fetch(`/api/sync?userId=${user.id}&username=${user.username}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && (data.transactions || data.debts)) {
+            const cloudTx: TransactionItem[] = data.transactions || [];
+            const cloudDebts: DebtItem[] = data.debts || [];
+
+            // Gabungkan transaksi
+            const existingTxMap = new Map(localTx.map((t) => [t.id, t]));
+            cloudTx.forEach((t) => {
+              if (!existingTxMap.has(t.id)) existingTxMap.set(t.id, t);
+            });
+            const mergedTx = Array.from(existingTxMap.values()).sort(
+              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+
+            // Gabungkan kasbon
+            const existingDebtMap = new Map(localDebts.map((d) => [d.id, d]));
+            cloudDebts.forEach((d) => {
+              if (!existingDebtMap.has(d.id)) existingDebtMap.set(d.id, d);
+            });
+            const mergedDebts = Array.from(existingDebtMap.values());
+
+            setTransactions(mergedTx);
+            setDebts(mergedDebts);
+            LocalStore.saveTransactions(mergedTx, active.id);
+            LocalStore.saveDebts(mergedDebts, active.id);
+
+            // Jika ada data di lokal yang belum masuk cloud, sinkronkan balik
+            if (localTx.length > cloudTx.length || localDebts.length > cloudDebts.length) {
+              triggerCloudSync(user, active, mergedTx, mergedDebts);
+            }
+          }
+        })
+        .catch((err) => console.warn('Fetch cloud data error:', err))
+        .finally(() => setIsSyncing(false));
+    }
   };
 
   // Handler saat login / register sukses
@@ -249,6 +327,7 @@ export default function BukuKasirHome() {
     const updated = [newItem, ...transactions];
     setTransactions(updated);
     LocalStore.saveTransactions(updated, activeStore.id);
+    triggerCloudSync(currentUser, activeStore, updated, debts);
 
     // Adjust date filter if transaction is outside view range
     if (data.date < dateFilter.startDate || data.date > dateFilter.endDate) {
@@ -264,6 +343,7 @@ export default function BukuKasirHome() {
     const updated = transactions.filter((t) => t.id !== id);
     setTransactions(updated);
     LocalStore.saveTransactions(updated, activeStore.id);
+    triggerCloudSync(currentUser, activeStore, updated, debts);
   };
 
   // Handlers for Debts
@@ -279,6 +359,7 @@ export default function BukuKasirHome() {
     const updated = [newDebt, ...debts];
     setDebts(updated);
     LocalStore.saveDebts(updated, activeStore.id);
+    triggerCloudSync(currentUser, activeStore, transactions, updated);
   };
 
   const handlePayDebt = (id: string, amount: number) => {
@@ -295,12 +376,14 @@ export default function BukuKasirHome() {
     });
     setDebts(updated);
     LocalStore.saveDebts(updated, activeStore.id);
+    triggerCloudSync(currentUser, activeStore, transactions, updated);
   };
 
   const handleDeleteDebt = (id: string) => {
     const updated = debts.filter((d) => d.id !== id);
     setDebts(updated);
     LocalStore.saveDebts(updated, activeStore.id);
+    triggerCloudSync(currentUser, activeStore, transactions, updated);
   };
 
   const handleExportExcel = () => {
@@ -341,6 +424,8 @@ export default function BukuKasirHome() {
         onOpenDebts={() => setIsDebtsOpen(true)}
         onLogout={handleLogout}
         debtCount={unpaidDebtCount}
+        isSyncing={isSyncing}
+        onTriggerSync={() => triggerCloudSync()}
       />
 
       {/* Main Container */}
