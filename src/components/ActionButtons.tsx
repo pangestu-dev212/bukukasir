@@ -16,7 +16,7 @@ export function ActionButtons({ onAddIncome, onAddExpense }: ActionButtonsProps)
         <button
           type="button"
           onClick={onAddIncome}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white py-3 px-3 rounded-2xl font-extrabold text-base flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition cursor-pointer"
+          className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-[0.98] text-white py-3.5 px-3 rounded-2xl font-black text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition cursor-pointer border border-emerald-400/30"
         >
           <PlusCircle className="w-5 h-5 stroke-[2.5]" />
           <span>+ Uang Masuk</span>
@@ -26,7 +26,7 @@ export function ActionButtons({ onAddIncome, onAddExpense }: ActionButtonsProps)
         <button
           type="button"
           onClick={onAddExpense}
-          className="w-full bg-rose-600 hover:bg-rose-700 active:scale-[0.98] text-white py-3 px-3 rounded-2xl font-extrabold text-base flex items-center justify-center gap-2 shadow-md shadow-rose-600/20 transition cursor-pointer"
+          className="w-full bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500 hover:from-rose-500 hover:to-pink-400 active:scale-[0.98] text-white py-3.5 px-3 rounded-2xl font-black text-base flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30 transition cursor-pointer border border-rose-400/30"
         >
           <MinusCircle className="w-5 h-5 stroke-[2.5]" />
           <span>- Uang Keluar</span>

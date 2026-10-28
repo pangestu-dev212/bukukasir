@@ -9,6 +9,19 @@ export function formatRupiah(amount: number): string {
 
 export function formatDateIndo(dateStr: string): string {
   try {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const d = new Date(year, month, day);
+      return new Intl.DateTimeFormat('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }).format(d);
+    }
     const d = new Date(dateStr);
     return new Intl.DateTimeFormat('id-ID', {
       weekday: 'long',
@@ -23,6 +36,18 @@ export function formatDateIndo(dateStr: string): string {
 
 export function formatDateShortIndo(dateStr: string): string {
   try {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const d = new Date(year, month, day);
+      return new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }).format(d);
+    }
     const d = new Date(dateStr);
     return new Intl.DateTimeFormat('id-ID', {
       day: 'numeric',

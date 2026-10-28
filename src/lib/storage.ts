@@ -1,4 +1,5 @@
 import { TransactionItem, DebtItem, StoreProfile, DEFAULT_CATEGORIES, CategoryItem, UserAccount, TransactionType, TransactionScope } from './types';
+import { getTodayDateString } from './formatters';
 
 const STORAGE_PREFIX = 'bukukasir_v2_';
 
@@ -128,7 +129,7 @@ export const LocalStore = {
     localStorage.setItem(tenantPrefix + 'active_store_id', initialStore.id);
 
     // Set sample transaksi pertama untuk toko baru
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayDateString();
     const initialSample: TransactionItem[] = [
       {
         id: 'sample-' + Date.now(),
@@ -339,7 +340,7 @@ export const LocalStore = {
       }
 
       // Sampel awal jika baru
-      const sampleDate = new Date().toISOString().split('T')[0];
+      const sampleDate = getTodayDateString();
       const initialSample: TransactionItem[] = [
         {
           id: 'sample-1',

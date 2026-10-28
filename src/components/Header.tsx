@@ -1,9 +1,7 @@
-'use client';
-
-import React from 'react';
-import { Store, Calendar, Share2, Download, BookOpen, ChevronDown, Pencil, LogOut, User, Cloud, RefreshCw } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Store, Calendar, Share2, Download, BookOpen, ChevronDown, Pencil, LogOut, User, Cloud, RefreshCw, MoreVertical, CheckCircle2, Clock } from 'lucide-react';
 import { StoreProfile, DateFilter, DateFilterMode, UserAccount } from '@/lib/types';
-import { formatDateRangeLabel } from '@/lib/formatters';
+import { formatDateRangeLabel, getTodayDateString, getYesterdayDateString, getLast7DaysRange, getThisMonthRange } from '@/lib/formatters';
 
 interface HeaderProps {
   activeStore: StoreProfile;
@@ -36,33 +34,69 @@ export function Header({
   isSyncing,
   onTriggerSync,
 }: HeaderProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [realtimeClock, setRealtimeClock] = useState<string>('');
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Jam realtime digital (update setiap detik, sinkron langsung dengan jam HP masing-masing)
+  useEffect(() => {
+    const getTimezoneSuffix = (d: Date) => {
+      const offsetHours = -d.getTimezoneOffset() / 60;
+      if (offsetHours === 7) return 'WIB';
+      if (offsetHours === 8) return 'WITA';
+      if (offsetHours === 9) return 'WIT';
+      return offsetHours >= 0 ? `GMT+${offsetHours}` : `GMT${offsetHours}`;
+    };
+
+    const updateClock = () => {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      const tz = getTimezoneSuffix(now);
+      setRealtimeClock(`${h}:${m}:${s} ${tz}`);
+    };
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
+
   const handlePresetClick = (mode: DateFilterMode) => {
-    const today = new Date().toISOString().split('T')[0];
-    const yesterdayDate = new Date();
-    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-    const yesterday = yesterdayDate.toISOString().split('T')[0];
+    const today = getTodayDateString();
+    const yesterday = getYesterdayDateString();
 
     if (mode === 'TODAY') {
       onChangeDateFilter({ mode: 'TODAY', startDate: today, endDate: today });
     } else if (mode === 'YESTERDAY') {
       onChangeDateFilter({ mode: 'YESTERDAY', startDate: yesterday, endDate: yesterday });
     } else if (mode === 'LAST_7') {
-      const start = new Date();
-      start.setDate(start.getDate() - 6);
+      const range = getLast7DaysRange();
       onChangeDateFilter({
         mode: 'LAST_7',
-        startDate: start.toISOString().split('T')[0],
-        endDate: today,
+        startDate: range.startDate,
+        endDate: range.endDate,
       });
     } else if (mode === 'THIS_MONTH') {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+      const range = getThisMonthRange();
       onChangeDateFilter({
         mode: 'THIS_MONTH',
-        startDate: `${year}-${month}-01`,
-        endDate: `${year}-${month}-${String(lastDay).padStart(2, '0')}`,
+        startDate: range.startDate,
+        endDate: range.endDate,
       });
     } else if (mode === 'CUSTOM') {
       onChangeDateFilter({
@@ -74,28 +108,33 @@ export function Header({
   };
 
   return (
-    <header className="bg-emerald-800 text-white shadow-md sticky top-0 z-30">
-      <div className="max-w-2xl mx-auto px-4 py-3">
-        {/* Baris Atas: Info Toko & Tombol Menu Cepat */}
-        <div className="flex items-center justify-between gap-2 border-b border-emerald-700/60 pb-2.5">
-          <div className="flex items-center gap-1 min-w-0">
+    <header className="bg-gradient-to-r from-emerald-800 via-teal-800 to-cyan-900 text-white shadow-lg shadow-emerald-950/25 sticky top-0 z-30 border-b border-teal-500/30 relative">
+      {/* Ambient background glow orbs */}
+      <div className="absolute -top-16 -right-16 w-52 h-52 rounded-full bg-cyan-400/15 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-16 -left-16 w-52 h-52 rounded-full bg-emerald-400/15 blur-3xl pointer-events-none" />
+
+      <div className="max-w-2xl mx-auto px-4 py-3 relative z-10">
+        {/* Baris Atas: Info Toko (Lega) & Menu Aksi Terstruktur */}
+        <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+          {/* Sisi Kiri: Nama Toko Lega & Utuh */}
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
             <button
               onClick={onOpenStoreSwitcher}
-              className="flex items-center gap-2 text-left hover:bg-emerald-700/50 p-1.5 -ml-1 rounded-xl transition group min-w-0"
+              className="flex items-center gap-2.5 text-left hover:bg-white/10 p-1.5 -ml-1 rounded-2xl transition group min-w-0 flex-1 border border-transparent hover:border-white/15"
               title="Klik untuk ganti atau tambah buku toko"
             >
-              <div className="w-10 h-10 rounded-xl bg-emerald-600/80 border border-emerald-400/30 flex items-center justify-center shrink-0 shadow-inner">
-                <Store className="w-5 h-5 text-emerald-100" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 border border-white/30 flex items-center justify-center shrink-0 shadow-md shadow-emerald-950/30">
+                <Store className="w-5 h-5 text-white drop-shadow-sm" />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <h1 className="font-extrabold text-base sm:text-lg leading-tight tracking-tight text-white drop-shadow-sm truncate max-w-[130px] sm:max-w-[210px]">
+                  <h1 className="font-black text-base sm:text-lg leading-tight tracking-tight text-white drop-shadow truncate">
                     {activeStore.storeName || 'Buku Kasir'}
                   </h1>
-                  <ChevronDown className="w-4 h-4 text-emerald-300 group-hover:translate-y-0.5 transition shrink-0" />
+                  <ChevronDown className="w-4 h-4 text-teal-300 group-hover:translate-y-0.5 transition shrink-0" />
                 </div>
-                <p className="text-[11px] sm:text-xs text-emerald-200/90 font-medium truncate">
-                  {activeStore.ownerName ? `Pemilik: ${activeStore.ownerName}` : 'Ganti Buku Usaha ▾'}
+                <p className="text-[11px] sm:text-xs text-teal-100/90 font-medium truncate">
+                  {activeStore.ownerName ? `Pemilik: ${activeStore.ownerName}` : 'Ganti Toko ▾'}
                 </p>
               </div>
             </button>
@@ -104,75 +143,157 @@ export function Header({
             <button
               type="button"
               onClick={onEditActiveStore}
-              className="p-1.5 text-emerald-200 hover:text-white hover:bg-emerald-700/70 rounded-lg transition shrink-0"
+              className="p-2 text-teal-200 hover:text-white hover:bg-white/10 rounded-xl transition shrink-0"
               title="Edit Nama Toko / Usaha Ini"
             >
               <Pencil className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* Action Icons */}
-          <div className="flex items-center gap-1 sm:gap-1.5">
+          {/* Sisi Kanan: Tombol Kasbon + Tombol Menu '...' */}
+          <div className="flex items-center gap-1.5 shrink-0" ref={menuRef}>
+            {/* Tombol Utama: Kasbon */}
             <button
               onClick={onOpenDebts}
-              className="relative p-2 bg-emerald-700/60 hover:bg-emerald-700 rounded-xl text-emerald-100 transition border border-emerald-600/50 flex items-center gap-1 text-xs font-semibold"
+              className="relative p-2 sm:px-3 bg-white/10 hover:bg-white/20 rounded-xl text-teal-100 transition border border-white/15 backdrop-blur-md flex items-center gap-1.5 text-xs font-bold shadow-sm"
               title="Buku Utang & Kasbon"
             >
-              <BookOpen className="w-4 h-4" />
+              <BookOpen className="w-4 h-4 text-amber-300" />
               <span className="hidden sm:inline">Kasbon</span>
               {debtCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-amber-500 text-white font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center border-2 border-emerald-800 animate-pulse">
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-[10px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center border-2 border-emerald-900 shadow-md animate-pulse">
                   {debtCount}
                 </span>
               )}
             </button>
 
-            <button
-              onClick={onOpenWhatsApp}
-              className="p-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition border border-emerald-500/50 flex items-center gap-1 text-xs font-semibold shadow-sm"
-              title="Bagikan Rekap ke WhatsApp"
-            >
-              <Share2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Kirim WA</span>
-            </button>
+            {/* Tombol Menu '...' Titik Tiga */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className={`p-2 rounded-xl transition border backdrop-blur-md flex items-center justify-center ${
+                  isMenuOpen
+                    ? 'bg-white text-emerald-900 border-white shadow-lg'
+                    : 'bg-white/10 hover:bg-white/20 text-teal-100 border-white/15 shadow-sm'
+                }`}
+                title="Menu Aksi & Pengaturan Toko"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
 
-            <button
-              onClick={onExportExcel}
-              className="p-2 bg-emerald-700/60 hover:bg-emerald-700 rounded-xl text-emerald-100 transition border border-emerald-600/50"
-              title="Unduh Laporan Excel Periode Ini"
-            >
-              <Download className="w-4 h-4" />
-            </button>
+              {/* Floating Dropdown Menu */}
+              {isMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-2xl shadow-2xl p-2 z-50 text-xs animate-in fade-in zoom-in-95 duration-150 space-y-1">
+                  {/* Info User / Toko Aktif */}
+                  <div className="px-3 py-2 bg-slate-800/80 rounded-xl border border-slate-700/50 mb-1">
+                    <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Akun Kasir Aktif</p>
+                    <p className="font-black text-slate-100 text-xs truncate">
+                      {currentUser?.username || 'admin'}
+                    </p>
+                  </div>
 
-            {/* Tombol Status Cloud Sync */}
-            <button
-              type="button"
-              onClick={onTriggerSync}
-              disabled={isSyncing}
-              className="p-2 bg-emerald-700/60 hover:bg-emerald-700 rounded-xl text-emerald-100 transition border border-emerald-600/50 flex items-center gap-1 text-xs"
-              title={
-                isSyncing
-                  ? 'Sedang menyinkronkan data ke Cloud Supabase...'
-                  : 'Data tersinkronisasi ke Cloud Supabase (Klik untuk Sinkronkan Sekarang)'
-              }
-            >
-              <Cloud className={`w-4 h-4 ${isSyncing ? 'text-amber-300 animate-pulse' : 'text-emerald-300'}`} />
-              <span className="hidden sm:inline font-semibold text-[11px]">
-                {isSyncing ? 'Sync...' : 'Cloud'}
-              </span>
-            </button>
+                  {/* Tombol Kirim WA */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onOpenWhatsApp();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left font-bold text-slate-200 hover:text-white hover:bg-emerald-600/30 hover:border-emerald-500/30 border border-transparent transition"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                      <Share2 className="w-3.5 h-3.5" />
+                    </div>
+                    <span>Kirim Rekap ke WA</span>
+                  </button>
 
-            {/* User Account / Logout */}
-            <button
-              onClick={onLogout}
-              className="p-2 bg-emerald-900/50 hover:bg-rose-600/90 rounded-xl text-emerald-200 hover:text-white transition border border-emerald-700/60 flex items-center gap-1 text-xs"
-              title={`Akun aktif: ${currentUser?.username || 'admin'} - Klik untuk Keluar / Ganti Akun`}
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden md:inline font-semibold text-[11px] max-w-[80px] truncate">
-                {currentUser?.username || 'Keluar'}
-              </span>
-            </button>
+                  {/* Tombol Unduh Excel */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onExportExcel();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left font-bold text-slate-200 hover:text-white hover:bg-blue-600/30 hover:border-blue-500/30 border border-transparent transition"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                      <Download className="w-3.5 h-3.5" />
+                    </div>
+                    <span>Unduh Laporan Excel</span>
+                  </button>
+
+                  {/* Tombol Sinkronisasi Cloud */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onTriggerSync) onTriggerSync();
+                    }}
+                    disabled={isSyncing}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left font-bold text-slate-200 hover:text-white hover:bg-cyan-600/30 hover:border-cyan-500/30 border border-transparent transition"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                        <Cloud className={`w-3.5 h-3.5 ${isSyncing ? 'animate-pulse text-amber-300' : ''}`} />
+                      </div>
+                      <span>{isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Cloud'}</span>
+                    </div>
+                    {isSyncing && (
+                      <RefreshCw className="w-3.5 h-3.5 text-amber-300 animate-spin" />
+                    )}
+                  </button>
+
+                  <div className="border-t border-slate-700/60 my-1 pt-1" />
+
+                  {/* Ganti Buku Toko */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onOpenStoreSwitcher();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center border border-slate-700">
+                      <Store className="w-3.5 h-3.5" />
+                    </div>
+                    <span>Ganti / Tambah Toko</span>
+                  </button>
+
+                  {/* Edit Profil Toko */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onEditActiveStore();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center border border-slate-700">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </div>
+                    <span>Edit Profil Usaha</span>
+                  </button>
+
+                  <div className="border-t border-slate-700/60 my-1 pt-1" />
+
+                  {/* Tombol Logout */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onLogout();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left font-bold text-rose-300 hover:text-white hover:bg-rose-600/80 transition"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-300 flex items-center justify-center">
+                      <LogOut className="w-3.5 h-3.5" />
+                    </div>
+                    <span>Keluar Akun</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -183,10 +304,10 @@ export function Header({
             <button
               type="button"
               onClick={() => handlePresetClick('TODAY')}
-              className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-xl whitespace-nowrap transition-all duration-200 ${
                 dateFilter.mode === 'TODAY'
-                  ? 'bg-white text-emerald-900 shadow-sm'
-                  : 'bg-emerald-900/40 text-emerald-100 hover:bg-emerald-700/50'
+                  ? 'bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-200 text-slate-950 font-black shadow-md shadow-emerald-950/40 scale-105'
+                  : 'bg-white/10 text-teal-100 hover:bg-white/20 border border-white/10'
               }`}
             >
               Hari Ini
@@ -194,10 +315,10 @@ export function Header({
             <button
               type="button"
               onClick={() => handlePresetClick('YESTERDAY')}
-              className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-xl whitespace-nowrap transition-all duration-200 ${
                 dateFilter.mode === 'YESTERDAY'
-                  ? 'bg-white text-emerald-900 shadow-sm'
-                  : 'bg-emerald-900/40 text-emerald-100 hover:bg-emerald-700/50'
+                  ? 'bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-200 text-slate-950 font-black shadow-md shadow-emerald-950/40 scale-105'
+                  : 'bg-white/10 text-teal-100 hover:bg-white/20 border border-white/10'
               }`}
             >
               Kemarin
@@ -205,10 +326,10 @@ export function Header({
             <button
               type="button"
               onClick={() => handlePresetClick('LAST_7')}
-              className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-xl whitespace-nowrap transition-all duration-200 ${
                 dateFilter.mode === 'LAST_7'
-                  ? 'bg-white text-emerald-900 shadow-sm'
-                  : 'bg-emerald-900/40 text-emerald-100 hover:bg-emerald-700/50'
+                  ? 'bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-200 text-slate-950 font-black shadow-md shadow-emerald-950/40 scale-105'
+                  : 'bg-white/10 text-teal-100 hover:bg-white/20 border border-white/10'
               }`}
             >
               7 Hari
@@ -216,10 +337,10 @@ export function Header({
             <button
               type="button"
               onClick={() => handlePresetClick('THIS_MONTH')}
-              className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-xl whitespace-nowrap transition-all duration-200 ${
                 dateFilter.mode === 'THIS_MONTH'
-                  ? 'bg-white text-emerald-900 shadow-sm'
-                  : 'bg-emerald-900/40 text-emerald-100 hover:bg-emerald-700/50'
+                  ? 'bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-200 text-slate-950 font-black shadow-md shadow-emerald-950/40 scale-105'
+                  : 'bg-white/10 text-teal-100 hover:bg-white/20 border border-white/10'
               }`}
             >
               Bulan Ini
@@ -227,10 +348,10 @@ export function Header({
             <button
               type="button"
               onClick={() => handlePresetClick('CUSTOM')}
-              className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition flex items-center gap-1 ${
+              className={`px-3.5 py-1.5 rounded-xl whitespace-nowrap transition-all duration-200 flex items-center gap-1 ${
                 dateFilter.mode === 'CUSTOM'
-                  ? 'bg-amber-400 text-amber-950 shadow-sm'
-                  : 'bg-emerald-900/40 text-emerald-100 hover:bg-emerald-700/50'
+                  ? 'bg-gradient-to-r from-amber-300 via-orange-300 to-yellow-200 text-amber-950 font-black shadow-md shadow-amber-950/30 scale-105'
+                  : 'bg-white/10 text-teal-100 hover:bg-white/20 border border-white/10'
               }`}
             >
               <Calendar className="w-3.5 h-3.5" />
@@ -267,9 +388,21 @@ export function Header({
             </div>
           )}
 
-          {/* Label Periode Terpilih */}
-          <div className="text-[11px] text-emerald-200/90 font-medium text-center">
-            Periode: <strong className="text-white font-bold">{formatDateRangeLabel(dateFilter.startDate, dateFilter.endDate)}</strong>
+          {/* Label Periode Terpilih & Jam Realtime Digital */}
+          <div className="flex items-center justify-between gap-2 pt-1 text-xs">
+            <div className="flex items-center gap-1.5 text-emerald-100 min-w-0">
+              <span className="text-[11px] font-semibold text-teal-200/90 shrink-0">Periode:</span>
+              <strong className="text-white font-bold bg-white/10 px-2 py-0.5 rounded-lg border border-white/15 backdrop-blur-sm truncate text-[11px] sm:text-xs">
+                {formatDateRangeLabel(dateFilter.startDate, dateFilter.endDate)}
+              </strong>
+            </div>
+
+            {realtimeClock && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/40 border border-teal-400/30 text-teal-200 font-mono text-[11.5px] font-bold shadow-inner backdrop-blur-md shrink-0">
+                <Clock className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
+                <span>{realtimeClock}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

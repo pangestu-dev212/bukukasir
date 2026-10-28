@@ -85,7 +85,7 @@ export default function BukuKasirHome() {
     debtList?: DebtItem[]
   ) => {
     const user = targetUser !== undefined ? targetUser : currentUser;
-    if (!user || user.id === 'tenant-admin') return;
+    if (!user) return;
 
     const store = targetStore || activeStore;
     const curTx = txList || transactions;
@@ -125,7 +125,7 @@ export default function BukuKasirHome() {
     setDebts(localDebts);
 
     // Ambil data terbaru dari Cloud Supabase jika pengguna terdaftar
-    if (user.id && !user.id.startsWith('tenant-admin')) {
+    if (user && (user.id || user.username)) {
       setIsSyncing(true);
       fetch(`/api/sync?userId=${user.id}&username=${user.username}`)
         .then((res) => res.json())
@@ -410,7 +410,7 @@ export default function BukuKasirHome() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 text-slate-900 pb-28">
+    <main className="min-h-screen bg-gradient-to-b from-slate-100 via-slate-50 to-slate-100 text-slate-900 pb-28">
       {/* Top Header */}
       <Header
         activeStore={activeStore}

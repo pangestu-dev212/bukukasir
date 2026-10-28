@@ -40,17 +40,23 @@ export function TransactionList({ items, selectedDate, onDeleteItem }: Transacti
           return (
             <div
               key={item.id}
-              className="bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-sm hover:shadow-md transition flex items-center justify-between gap-3"
+              className={`bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-xs hover:shadow-md transition-all duration-200 flex items-center justify-between gap-3 border-l-4 ${
+                isIncome
+                  ? 'border-l-emerald-500 hover:border-l-teal-400'
+                  : isBusiness
+                  ? 'border-l-rose-500 hover:border-l-pink-400'
+                  : 'border-l-purple-500 hover:border-l-pink-400'
+              }`}
             >
               <div className="flex items-center gap-3 min-w-0">
-                {/* Icon Bulat */}
+                {/* Icon Kotak Gradasi */}
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
                     isIncome
-                      ? 'bg-emerald-100 text-emerald-700'
+                      ? 'bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-700 border border-emerald-200/80'
                       : isBusiness
-                      ? 'bg-rose-100 text-rose-700'
-                      : 'bg-purple-100 text-purple-700'
+                      ? 'bg-gradient-to-br from-rose-100 to-pink-100 text-rose-700 border border-rose-200/80'
+                      : 'bg-gradient-to-br from-purple-100 to-pink-100 text-purple-700 border border-purple-200/80'
                   }`}
                 >
                   {isIncome ? (
