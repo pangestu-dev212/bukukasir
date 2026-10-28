@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #090d16;
+  --background: #f8fafc;
   --foreground: #0f172a;
 }
 
@@ -11,7 +11,7 @@
 }
 
 body {
-  background-color: #090d16;
+  background-color: #f8fafc;
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
 }
@@ -26,46 +26,12 @@ input::placeholder, textarea::placeholder {
   color: #94a3b8 !important;
 }
 
-@keyframes float-slow {
-  0%, 100% {
-    transform: translateY(0px) scale(1);
-  }
-  50% {
-    transform: translateY(-20px) scale(1.06);
-  }
+.bg-light-pattern {
+  background-image: radial-gradient(rgba(16, 185, 129, 0.14) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
 }
 
-@keyframes float-reverse {
-  0%, 100% {
-    transform: translateY(0px) scale(1);
-  }
-  50% {
-    transform: translateY(18px) scale(0.94);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 0.75;
-  }
-}
-
-.animate-float-slow {
-  animation: float-slow 8s ease-in-out infinite;
-}
-
-.animate-float-reverse {
-  animation: float-reverse 11s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 6s ease-in-out infinite;
-}
-
-.bg-dot-pattern {
+.bg-dark-pattern {
   background-image: radial-gradient(rgba(16, 185, 129, 0.22) 1.2px, transparent 1.2px);
-  background-size: 28px 28px;
+  background-size: 24px 24px;
 }
