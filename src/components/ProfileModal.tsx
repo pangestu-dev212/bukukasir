@@ -16,6 +16,14 @@ export function ProfileModal({ isOpen, profile, onClose, onSave }: ProfileModalP
   const [ownerName, setOwnerName] = useState<string>(profile.ownerName || '');
   const [businessType, setBusinessType] = useState<string>(profile.businessType || 'WARUNG');
 
+  React.useEffect(() => {
+    if (isOpen) {
+      setStoreName(profile.storeName || '');
+      setOwnerName(profile.ownerName || '');
+      setBusinessType(profile.businessType || 'WARUNG');
+    }
+  }, [isOpen, profile]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {

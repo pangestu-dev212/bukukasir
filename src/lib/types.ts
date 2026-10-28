@@ -13,6 +13,18 @@ export interface DateFilter {
 
 export type UserProfile = StoreProfile;
 
+export interface UserAccount {
+  id: string;
+  username: string;
+  password?: string;
+  name: string;
+  storeName: string;
+  businessType: string;
+  phone?: string;
+  role?: 'ADMIN' | 'USER';
+  createdAt: string;
+}
+
 export interface StoreProfile {
   id: string;
   storeName: string;
@@ -72,6 +84,12 @@ export const DEFAULT_CATEGORIES: CategoryItem[] = [
   { id: 'cat-in-1', name: 'Penjualan / Kasir', type: 'IN', scope: 'BUSINESS', icon: 'ShoppingBag', color: 'emerald' },
   { id: 'cat-in-2', name: 'Pendapatan Jasa / Ongkos', type: 'IN', scope: 'BUSINESS', icon: 'Wrench', color: 'teal' },
   { id: 'cat-in-3', name: 'Pendapatan Lain Toko', type: 'IN', scope: 'BUSINESS', icon: 'Coins', color: 'cyan' },
+
+  // Pemasukan Pribadi / Luar Usaha
+  { id: 'cat-in-p1', name: 'Gaji / Penghasilan Luar', type: 'IN', scope: 'PERSONAL', icon: 'Briefcase', color: 'indigo' },
+  { id: 'cat-in-p2', name: 'Suntikan Modal Pemilik', type: 'IN', scope: 'PERSONAL', icon: 'PiggyBank', color: 'purple' },
+  { id: 'cat-in-p3', name: 'Kiriman Uang / Keluarga', type: 'IN', scope: 'PERSONAL', icon: 'HeartHandshake', color: 'pink' },
+  { id: 'cat-in-p4', name: 'Pemasukan Pribadi Lainnya', type: 'IN', scope: 'PERSONAL', icon: 'Sparkles', color: 'amber' },
 
   // Pengeluaran Usaha (Toko)
   { id: 'cat-out-b1', name: 'Kulakan / Belanja Stok', type: 'OUT', scope: 'BUSINESS', icon: 'Truck', color: 'amber' },

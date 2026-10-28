@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Plus, Store, Check, Trash2, Cloud, Sparkles, Smartphone } from 'lucide-react';
+import { X, Plus, Store, Check, Trash2, Cloud, Sparkles, Smartphone, Pencil } from 'lucide-react';
 import { StoreProfile, BUSINESS_TYPES } from '@/lib/types';
 
 interface StoreSwitcherModalProps {
@@ -10,6 +10,7 @@ interface StoreSwitcherModalProps {
   activeStoreId: string;
   onClose: () => void;
   onSelectStore: (id: string) => void;
+  onEditStore: (store: StoreProfile) => void;
   onCreateStore: (data: { storeName: string; ownerName?: string; businessType: string; phone?: string; pin?: string }) => void;
   onDeleteStore: (id: string) => void;
   onSyncCloud: (store: StoreProfile) => void;
@@ -21,6 +22,7 @@ export function StoreSwitcherModal({
   activeStoreId,
   onClose,
   onSelectStore,
+  onEditStore,
   onCreateStore,
   onDeleteStore,
   onSyncCloud,
@@ -123,7 +125,18 @@ export function StoreSwitcherModal({
                   </button>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditStore(store);
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-100 rounded-lg transition"
+                      title="Edit Nama & Info Usaha"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
                     {stores.length > 1 && !isActive && (
                       <button
                         type="button"

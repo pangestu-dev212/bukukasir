@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Check, Store, Home, Calendar, Wallet } from 'lucide-react';
+import { X, Check, Store, Home, Calendar, Wallet, Plus, Sparkles } from 'lucide-react';
 import { TransactionType, TransactionScope, CategoryItem } from '@/lib/types';
 import { formatRupiah } from '@/lib/formatters';
 
@@ -11,6 +11,7 @@ interface TransactionModalProps {
   categories: CategoryItem[];
   selectedDate: string;
   onClose: () => void;
+  onAddCategory?: (data: { name: string; type: TransactionType; scope: TransactionScope }) => void;
   onSave: (data: {
     type: TransactionType;
     scope: TransactionScope;
@@ -28,6 +29,7 @@ export function TransactionModal({
   categories,
   selectedDate,
   onClose,
+  onAddCategory,
   onSave,
 }: TransactionModalProps) {
   const [scope, setScope] = useState<TransactionScope>('BUSINESS');
@@ -37,12 +39,18 @@ export function TransactionModal({
   const [date, setDate] = useState<string>(selectedDate);
   const [paymentMethod, setPaymentMethod] = useState<'TUNAI' | 'TRANSFER' | 'QRIS'>('TUNAI');
 
+  // State tambah kategori baru manual
+  const [isAddingCategory, setIsAddingCategory] = useState<boolean>(false);
+  const [newCatName, setNewCatName] = useState<string>('');
+
   useEffect(() => {
     if (isOpen) {
       setAmountStr('');
       setNote('');
       setDate(selectedDate);
       setPaymentMethod('TUNAI');
+      setIsAddingCategory(false);
+      setNewCatName('');
 
       if (type === 'IN') {
         setScope('BUSINESS');
@@ -57,17 +65,43 @@ export function TransactionModal({
   if (!isOpen) return null;
 
   const numericAmount = parseInt(amountStr.replace(/\D/g, '') || '0', 10);
+  const isIncome = type === 'IN';
 
   // Filter Kategori sesuai tipe & scope
-  const availableCategories = categories.filter((c) => {
-    if (c.type !== type) return false;
-    if (type === 'IN') return true;
-    return c.scope === scope;
-  });
+  const availableCategories = categories.filter((c) => c.type === type && c.scope === scope);
+
+  const handleScopeChange = (newScope: TransactionScope) => {
+    setScope(newScope);
+    // Cari kategori bawaan pertama yang cocok dengan scope baru
+    const matching = categories.filter((c) => c.type === type && c.scope === newScope);
+    if (matching.length > 0) {
+      setCategoryName(matching[0].name);
+    }
+  };
 
   const handleQuickAdd = (add: number) => {
     const cur = numericAmount + add;
     setAmountStr(cur.toString());
+  };
+
+  const handleSaveCustomCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCatName.trim()) {
+      alert('Nama kategori tidak boleh kosong');
+      return;
+    }
+
+    if (onAddCategory) {
+      onAddCategory({
+        name: newCatName.trim(),
+        type,
+        scope,
+      });
+    }
+
+    setCategoryName(newCatName.trim());
+    setNewCatName('');
+    setIsAddingCategory(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -83,7 +117,7 @@ export function TransactionModal({
 
     onSave({
       type,
-      scope: type === 'IN' ? 'BUSINESS' : scope,
+      scope,
       amount: numericAmount,
       categoryName,
       note,
@@ -92,8 +126,6 @@ export function TransactionModal({
     });
     onClose();
   };
-
-  const isIncome = type === 'IN';
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -109,7 +141,9 @@ export function TransactionModal({
               {isIncome ? 'Catat Uang Masuk' : 'Catat Uang Keluar'}
             </h2>
             <p className="text-xs text-white/80 font-medium">
-              {isIncome ? 'Penjualan, jasa, atau modal' : 'Kulakan, operasional, atau pribadi'}
+              {isIncome
+                ? 'Pemasukan usaha (toko) atau pribadi (gaji/suntikan modal)'
+                : 'Kulakan, operasional toko, atau kebutuhan pribadi/rumah'}
             </p>
           </div>
           <button
@@ -122,47 +156,45 @@ export function TransactionModal({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 flex-1">
-          {/* PEMISAHAN PENGELUARAN: TOKO VS PRIBADI (Jika Uang Keluar) */}
-          {!isIncome && (
-            <div className="bg-slate-50 p-2.5 rounded-2xl border-2 border-slate-200">
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Pengeluaran ini untuk apa? <span className="text-rose-600 font-bold">*Wajib Pisah</span>
+          {/* PEMISAHAN TRANSAKSI: USAHA/TOKO VS PRIBADI */}
+          <div className="bg-slate-50 p-2.5 rounded-2xl border-2 border-slate-200">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-slate-700">
+                {isIncome ? 'Pemasukan ini dari mana?' : 'Pengeluaran ini untuk apa?'}
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setScope('BUSINESS');
-                    setCategoryName('Kulakan / Belanja Stok');
-                  }}
-                  className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition border-2 ${
-                    scope === 'BUSINESS'
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                      : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400'
-                  }`}
-                >
-                  <Store className="w-4 h-4" />
-                  🏪 Usaha / Toko
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setScope('PERSONAL');
-                    setCategoryName('Belanja Dapur & Makan');
-                  }}
-                  className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition border-2 ${
-                    scope === 'PERSONAL'
-                      ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
-                      : 'bg-white text-slate-700 border-slate-200 hover:border-purple-400'
-                  }`}
-                >
-                  <Home className="w-4 h-4" />
-                  🏠 Pribadi / Rumah
-                </button>
-              </div>
+              <span className="text-[11px] text-slate-500 font-semibold">
+                {scope === 'BUSINESS' ? 'Masuk Kas Toko' : 'Pribadi / Dapur'}
+              </span>
             </div>
-          )}
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleScopeChange('BUSINESS')}
+                className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition border-2 ${
+                  scope === 'BUSINESS'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400'
+                }`}
+              >
+                <Store className="w-4 h-4" />
+                🏪 Usaha / Toko
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleScopeChange('PERSONAL')}
+                className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition border-2 ${
+                  scope === 'PERSONAL'
+                    ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-purple-400'
+                }`}
+              >
+                <Home className="w-4 h-4" />
+                {isIncome ? '🏠 Pribadi / Modal Luar' : '🏠 Pribadi / Rumah'}
+              </button>
+            </div>
+          </div>
 
           {/* INPUT NOMINAL BESAR & JELAS */}
           <div>
@@ -187,7 +219,7 @@ export function TransactionModal({
               />
             </div>
 
-            {/* Quick Add Buttons (Mudah ditekan jari orang tua) */}
+            {/* Quick Add Buttons */}
             <div className="flex flex-wrap gap-1.5 mt-2">
               <button
                 type="button"
@@ -227,11 +259,63 @@ export function TransactionModal({
             </div>
           </div>
 
-          {/* PILIH KATEGORI (CHIPS BESAR) */}
+          {/* PILIH KATEGORI & TAMBAH MANUAL */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
-              Pilih Kategori
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-slate-700">
+                Pilih Kategori ({scope === 'BUSINESS' ? 'Toko' : 'Pribadi'})
+              </label>
+
+              {!isAddingCategory && (
+                <button
+                  type="button"
+                  onClick={() => setIsAddingCategory(true)}
+                  className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 hover:underline"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  + Tambah Kategori
+                </button>
+              )}
+            </div>
+
+            {/* Form Tambah Kategori Baru Manual */}
+            {isAddingCategory && (
+              <div className="bg-emerald-50/70 border border-emerald-300 rounded-xl p-2.5 mb-2.5 space-y-2 animate-in fade-in duration-150">
+                <span className="text-[11px] font-bold text-emerald-900 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                  Tambah Kategori {isIncome ? 'Pemasukan' : 'Pengeluaran'} Baru:
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Gaji Kantor, Arisan, Titipan, dll"
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    className="flex-1 px-3 py-1.5 text-xs font-bold bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveCustomCategory}
+                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition shrink-0"
+                  >
+                    Simpan
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingCategory(false);
+                      setNewCatName('');
+                    }}
+                    className="px-2 py-1.5 text-slate-500 hover:text-slate-800 text-xs font-medium shrink-0"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Chips Kategori */}
             <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
               {availableCategories.map((c) => (
                 <button
@@ -241,7 +325,9 @@ export function TransactionModal({
                   className={`py-2 px-2.5 text-xs font-semibold rounded-xl text-left flex items-center justify-between border-2 transition ${
                     categoryName === c.name
                       ? isIncome
-                        ? 'bg-emerald-50 border-emerald-600 text-emerald-900 font-bold'
+                        ? scope === 'BUSINESS'
+                          ? 'bg-emerald-50 border-emerald-600 text-emerald-900 font-bold'
+                          : 'bg-purple-50 border-purple-600 text-purple-900 font-bold'
                         : scope === 'BUSINESS'
                         ? 'bg-blue-50 border-blue-600 text-blue-900 font-bold'
                         : 'bg-purple-50 border-purple-600 text-purple-900 font-bold'
@@ -262,14 +348,14 @@ export function TransactionModal({
             </label>
             <input
               type="text"
-              placeholder="Contoh: Beli beras 10kg, Pembeli Pak RT, dll"
+              placeholder="Contoh: Beli beras 10kg, Pembeli Pak RT, Gaji bulanan, dll"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               className="w-full px-3.5 py-2.5 text-sm text-slate-900 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-600"
             />
           </div>
 
-          {/* TANGGAL TRANSAKSI (BACKDATE CEPAT) */}
+          {/* TANGGAL TRANSAKSI */}
           <div className="grid grid-cols-2 gap-2 pt-1">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">

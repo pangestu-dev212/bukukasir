@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
-import { ArrowDownLeft, ArrowUpRight, Wallet, Store, Home, AlertCircle } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Wallet, Store, Home, AlertCircle, Sparkles } from 'lucide-react';
 import { formatRupiah } from '@/lib/formatters';
 
 interface SummaryCardsProps {
-  totalIn: number;
+  totalInBusiness: number;
+  totalInPersonal: number;
   totalOutBusiness: number;
   totalOutPersonal: number;
   periodLabel: string;
@@ -14,16 +15,18 @@ interface SummaryCardsProps {
 }
 
 export function SummaryCards({
-  totalIn,
+  totalInBusiness,
+  totalInPersonal,
   totalOutBusiness,
   totalOutPersonal,
   periodLabel,
   scopeFilter,
   onFilterChange,
 }: SummaryCardsProps) {
+  const totalIn = totalInBusiness + totalInPersonal;
   const totalOut = totalOutBusiness + totalOutPersonal;
   const sisaKas = totalIn - totalOut;
-  const untungBersihToko = totalIn - totalOutBusiness;
+  const untungBersihToko = totalInBusiness - totalOutBusiness;
 
   return (
     <div className="space-y-3">
@@ -33,7 +36,7 @@ export function SummaryCards({
           <div className="flex items-center justify-between text-xs text-slate-300 font-semibold mb-1">
             <span className="flex items-center gap-1.5">
               <Wallet className="w-4 h-4 text-emerald-400" />
-              Sisa Uang di Kas / Dompet
+              Sisa Kas / Uang di Tangan
             </span>
             <span className="text-[11px] bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-700 text-emerald-300 font-semibold max-w-[180px] truncate">
               {periodLabel}
@@ -44,11 +47,11 @@ export function SummaryCards({
             {formatRupiah(sisaKas)}
           </div>
 
-          {/* Catatan Untung Bersih Toko */}
+          {/* Laba Bersih Toko Murni */}
           <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-2.5 flex items-center justify-between gap-2 text-xs">
             <span className="text-slate-300 flex items-center gap-1">
               <Store className="w-3.5 h-3.5 text-blue-400" />
-              Laba Bersih Usaha (Toko):
+              Laba Bersih Toko (Omset Toko - Biaya Toko):
             </span>
             <span className={`font-bold ${untungBersihToko >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
               {formatRupiah(untungBersihToko)}
@@ -57,32 +60,46 @@ export function SummaryCards({
         </div>
       </div>
 
-      {/* 2 Kolom Pemasukan vs Pengeluaran */}
+      {/* 2 Kolom Pemasukan vs Pengeluaran Total */}
       <div className="grid grid-cols-2 gap-2.5">
+        {/* Total Uang Masuk */}
         <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-3 shadow-sm">
-          <div className="flex items-center gap-1.5 text-emerald-800 text-xs font-bold mb-1">
-            <div className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center">
-              <ArrowDownLeft className="w-4 h-4" />
-            </div>
-            Uang Masuk
+          <div className="flex items-center justify-between mb-1">
+            <span className="flex items-center gap-1 text-emerald-800 text-xs font-bold">
+              <div className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center">
+                <ArrowDownLeft className="w-3.5 h-3.5" />
+              </div>
+              Uang Masuk
+            </span>
           </div>
-          <div className="text-xl font-extrabold text-emerald-900 tracking-tight">
+          <div className="text-lg sm:text-xl font-extrabold text-emerald-900 tracking-tight">
             {formatRupiah(totalIn)}
           </div>
-          <p className="text-[11px] text-emerald-700 mt-0.5 font-medium">Dari penjualan & jasa</p>
+          <div className="mt-1.5 pt-1.5 border-t border-emerald-200/60 text-[10px] text-emerald-800 flex justify-between">
+            <span>Toko: <strong>{formatRupiah(totalInBusiness)}</strong></span>
+            {totalInPersonal > 0 && (
+              <span>Pribadi: <strong>{formatRupiah(totalInPersonal)}</strong></span>
+            )}
+          </div>
         </div>
 
+        {/* Total Uang Keluar */}
         <div className="bg-rose-50 border-2 border-rose-200 rounded-2xl p-3 shadow-sm">
-          <div className="flex items-center gap-1.5 text-rose-800 text-xs font-bold mb-1">
-            <div className="w-6 h-6 rounded-lg bg-rose-600 text-white flex items-center justify-center">
-              <ArrowUpRight className="w-4 h-4" />
-            </div>
-            Uang Keluar
+          <div className="flex items-center justify-between mb-1">
+            <span className="flex items-center gap-1 text-rose-800 text-xs font-bold">
+              <div className="w-5 h-5 rounded-md bg-rose-600 text-white flex items-center justify-center">
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </div>
+              Uang Keluar
+            </span>
           </div>
-          <div className="text-xl font-extrabold text-rose-900 tracking-tight">
+          <div className="text-lg sm:text-xl font-extrabold text-rose-900 tracking-tight">
             {formatRupiah(totalOut)}
           </div>
-          <p className="text-[11px] text-rose-700 mt-0.5 font-medium">Toko + Pribadi</p>
+          <div className="mt-1.5 pt-1.5 border-t border-rose-200/60 text-[10px] text-rose-800 flex justify-between">
+            <span>Toko: <strong>{formatRupiah(totalOutBusiness)}</strong></span>
+            <span>Dapur: <strong>{formatRupiah(totalOutPersonal)}</strong></span>
+          </div>
         </div>
       </div>
 
@@ -91,32 +108,48 @@ export function SummaryCards({
         <div className="flex items-center justify-between text-amber-950 font-bold mb-2">
           <span className="flex items-center gap-1">
             <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-            Pemisahan Pengeluaran Kas:
+            Pemisahan Kas Toko vs Pribadi:
           </span>
-          <span className="text-[11px] text-amber-700 font-semibold">Cegah Bocor Kasir</span>
+          <span className="text-[11px] text-amber-700 font-semibold">Cegah Tercampur</span>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-white/90 border border-blue-200/80 rounded-xl p-2">
-            <div className="flex items-center gap-1 text-blue-900 font-semibold text-[11px]">
-              <Store className="w-3.5 h-3.5 text-blue-600" />
-              🏪 Toko / Usaha
+            <div className="flex items-center justify-between text-blue-900 font-semibold text-[11px]">
+              <span className="flex items-center gap-1">
+                <Store className="w-3.5 h-3.5 text-blue-600" />
+                🏪 Arus Kas Usaha
+              </span>
             </div>
-            <div className="text-sm font-bold text-blue-950 mt-0.5">
-              {formatRupiah(totalOutBusiness)}
+            <div className="text-xs text-slate-600 mt-1 space-y-0.5">
+              <div className="flex justify-between">
+                <span>Omset:</span>
+                <span className="font-bold text-emerald-700">+{formatRupiah(totalInBusiness)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Biaya:</span>
+                <span className="font-bold text-rose-700">-{formatRupiah(totalOutBusiness)}</span>
+              </div>
             </div>
-            <span className="text-[10px] text-blue-700">Kulakan, gaji, operasional</span>
           </div>
 
           <div className="bg-white/90 border border-purple-200/80 rounded-xl p-2">
-            <div className="flex items-center gap-1 text-purple-900 font-semibold text-[11px]">
-              <Home className="w-3.5 h-3.5 text-purple-600" />
-              🏠 Pribadi / Dapur
+            <div className="flex items-center justify-between text-purple-900 font-semibold text-[11px]">
+              <span className="flex items-center gap-1">
+                <Home className="w-3.5 h-3.5 text-purple-600" />
+                🏠 Arus Kas Pribadi
+              </span>
             </div>
-            <div className="text-sm font-bold text-purple-950 mt-0.5">
-              {formatRupiah(totalOutPersonal)}
+            <div className="text-xs text-slate-600 mt-1 space-y-0.5">
+              <div className="flex justify-between">
+                <span>Masuk:</span>
+                <span className="font-bold text-emerald-700">+{formatRupiah(totalInPersonal)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Dapur:</span>
+                <span className="font-bold text-rose-700">-{formatRupiah(totalOutPersonal)}</span>
+              </div>
             </div>
-            <span className="text-[10px] text-purple-700">Makan, jajan, anak</span>
           </div>
         </div>
       </div>
@@ -141,7 +174,8 @@ export function SummaryCards({
               : 'text-slate-600 hover:text-blue-700'
           }`}
         >
-          🏪 Usaha Toko
+          <Store className="w-3 h-3" />
+          Usaha Toko
         </button>
         <button
           onClick={() => onFilterChange('PERSONAL')}
@@ -151,7 +185,8 @@ export function SummaryCards({
               : 'text-slate-600 hover:text-purple-700'
           }`}
         >
-          🏠 Pribadi Dapur
+          <Home className="w-3 h-3" />
+          Pribadi Dapur
         </button>
       </div>
     </div>

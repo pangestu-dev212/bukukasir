@@ -67,19 +67,17 @@ export function TransactionList({ items, selectedDate, onDeleteItem }: Transacti
                       {item.categoryName}
                     </span>
 
-                    {/* Badge Scope */}
-                    {!isIncome && (
-                      <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 ${
-                          isBusiness
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-purple-100 text-purple-800'
-                        }`}
-                      >
-                        {isBusiness ? <Store className="w-2.5 h-2.5" /> : <Home className="w-2.5 h-2.5" />}
-                        {isBusiness ? 'Toko' : 'Pribadi'}
-                      </span>
-                    )}
+                    {/* Badge Scope (Toko vs Pribadi) */}
+                    <span
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 ${
+                        isBusiness
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-purple-100 text-purple-800'
+                      }`}
+                    >
+                      {isBusiness ? <Store className="w-2.5 h-2.5" /> : <Home className="w-2.5 h-2.5" />}
+                      {isBusiness ? 'Toko' : 'Pribadi'}
+                    </span>
 
                     {item.paymentMethod !== 'TUNAI' && (
                       <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700">

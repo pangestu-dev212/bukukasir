@@ -1,29 +1,35 @@
 'use client';
 
 import React from 'react';
-import { Store, Calendar, Share2, Download, BookOpen, ChevronDown } from 'lucide-react';
-import { StoreProfile, DateFilter, DateFilterMode } from '@/lib/types';
+import { Store, Calendar, Share2, Download, BookOpen, ChevronDown, Pencil, LogOut, User } from 'lucide-react';
+import { StoreProfile, DateFilter, DateFilterMode, UserAccount } from '@/lib/types';
 import { formatDateRangeLabel } from '@/lib/formatters';
 
 interface HeaderProps {
   activeStore: StoreProfile;
+  currentUser?: UserAccount | null;
   dateFilter: DateFilter;
   onChangeDateFilter: (filter: DateFilter) => void;
   onOpenStoreSwitcher: () => void;
+  onEditActiveStore: () => void;
   onOpenWhatsApp: () => void;
   onExportExcel: () => void;
   onOpenDebts: () => void;
+  onLogout: () => void;
   debtCount: number;
 }
 
 export function Header({
   activeStore,
+  currentUser,
   dateFilter,
   onChangeDateFilter,
   onOpenStoreSwitcher,
+  onEditActiveStore,
   onOpenWhatsApp,
   onExportExcel,
   onOpenDebts,
+  onLogout,
   debtCount,
 }: HeaderProps) {
   const handlePresetClick = (mode: DateFilterMode) => {
@@ -68,29 +74,41 @@ export function Header({
       <div className="max-w-2xl mx-auto px-4 py-3">
         {/* Baris Atas: Info Toko & Tombol Menu Cepat */}
         <div className="flex items-center justify-between gap-2 border-b border-emerald-700/60 pb-2.5">
-          <button
-            onClick={onOpenStoreSwitcher}
-            className="flex items-center gap-2.5 text-left hover:bg-emerald-700/50 p-1.5 -ml-1.5 rounded-xl transition group"
-            title="Klik untuk ganti atau tambah buku toko"
-          >
-            <div className="w-10 h-10 rounded-xl bg-emerald-600/80 border border-emerald-400/30 flex items-center justify-center shrink-0 shadow-inner">
-              <Store className="w-5 h-5 text-emerald-100" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h1 className="font-extrabold text-lg leading-tight tracking-tight text-white drop-shadow-sm truncate max-w-[170px] sm:max-w-[240px]">
-                  {activeStore.storeName || 'Buku Kasir'}
-                </h1>
-                <ChevronDown className="w-4 h-4 text-emerald-300 group-hover:translate-y-0.5 transition shrink-0" />
+          <div className="flex items-center gap-1 min-w-0">
+            <button
+              onClick={onOpenStoreSwitcher}
+              className="flex items-center gap-2 text-left hover:bg-emerald-700/50 p-1.5 -ml-1 rounded-xl transition group min-w-0"
+              title="Klik untuk ganti atau tambah buku toko"
+            >
+              <div className="w-10 h-10 rounded-xl bg-emerald-600/80 border border-emerald-400/30 flex items-center justify-center shrink-0 shadow-inner">
+                <Store className="w-5 h-5 text-emerald-100" />
               </div>
-              <p className="text-xs text-emerald-200/90 font-medium truncate">
-                {activeStore.ownerName ? `Pemilik: ${activeStore.ownerName}` : 'Ganti Buku Usaha ▾'}
-              </p>
-            </div>
-          </button>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h1 className="font-extrabold text-base sm:text-lg leading-tight tracking-tight text-white drop-shadow-sm truncate max-w-[130px] sm:max-w-[210px]">
+                    {activeStore.storeName || 'Buku Kasir'}
+                  </h1>
+                  <ChevronDown className="w-4 h-4 text-emerald-300 group-hover:translate-y-0.5 transition shrink-0" />
+                </div>
+                <p className="text-[11px] sm:text-xs text-emerald-200/90 font-medium truncate">
+                  {activeStore.ownerName ? `Pemilik: ${activeStore.ownerName}` : 'Ganti Buku Usaha ▾'}
+                </p>
+              </div>
+            </button>
+
+            {/* Tombol Cepat Edit Nama Toko */}
+            <button
+              type="button"
+              onClick={onEditActiveStore}
+              className="p-1.5 text-emerald-200 hover:text-white hover:bg-emerald-700/70 rounded-lg transition shrink-0"
+              title="Edit Nama Toko / Usaha Ini"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+          </div>
 
           {/* Action Icons */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5">
             <button
               onClick={onOpenDebts}
               className="relative p-2 bg-emerald-700/60 hover:bg-emerald-700 rounded-xl text-emerald-100 transition border border-emerald-600/50 flex items-center gap-1 text-xs font-semibold"
@@ -120,6 +138,18 @@ export function Header({
               title="Unduh Laporan Excel Periode Ini"
             >
               <Download className="w-4 h-4" />
+            </button>
+
+            {/* User Account / Logout */}
+            <button
+              onClick={onLogout}
+              className="p-2 bg-emerald-900/50 hover:bg-rose-600/90 rounded-xl text-emerald-200 hover:text-white transition border border-emerald-700/60 flex items-center gap-1 text-xs"
+              title={`Akun aktif: ${currentUser?.username || 'admin'} - Klik untuk Keluar / Ganti Akun`}
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden md:inline font-semibold text-[11px] max-w-[80px] truncate">
+                {currentUser?.username || 'Keluar'}
+              </span>
             </button>
           </div>
         </div>
