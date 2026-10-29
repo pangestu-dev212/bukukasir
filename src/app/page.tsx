@@ -11,6 +11,8 @@ import { WhatsAppShareModal } from '@/components/WhatsAppShareModal';
 import { StoreSwitcherModal } from '@/components/StoreSwitcherModal';
 import { ProfileModal } from '@/components/ProfileModal';
 import { AuthScreen } from '@/components/AuthScreen';
+import { AnalyticsChart } from '@/components/AnalyticsChart';
+import { ReceiptModal } from '@/components/ReceiptModal';
 import { LocalStore } from '@/lib/storage';
 import {
   TransactionItem,
@@ -57,6 +59,7 @@ export default function BukuKasirHome() {
   const [isStoreSwitcherOpen, setIsStoreSwitcherOpen] = useState<boolean>(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
   const [storeToEdit, setStoreToEdit] = useState<StoreProfile | null>(null);
+  const [receiptItem, setReceiptItem] = useState<TransactionItem | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   // Load user session on mount
@@ -198,6 +201,7 @@ export default function BukuKasirHome() {
       storeName: updatedData.storeName,
       ownerName: updatedData.ownerName,
       businessType: updatedData.businessType,
+      logo: updatedData.logo,
     });
 
     const updatedStores = LocalStore.getStores();
@@ -441,11 +445,17 @@ export default function BukuKasirHome() {
           onFilterChange={setScopeFilter}
         />
 
+        {/* Grafik Tren 7 Hari (Omset Penjualan vs Pengeluaran) */}
+        <AnalyticsChart transactions={transactions} />
+
         {/* Daftar Transaksi Sesuai Rentang Tanggal */}
         <TransactionList
           items={displayedTransactions}
           selectedDate={dateFilter.startDate}
           onDeleteItem={handleDeleteTransaction}
+          onSelectReceipt={(item) => setReceiptItem(item)}
+          onAddIncome={() => setModalType('IN')}
+          onAddExpense={() => setModalType('OUT')}
         />
       </div>
 
@@ -506,6 +516,14 @@ export default function BukuKasirHome() {
           setStoreToEdit(null);
         }}
         onSave={handleSaveStoreEdit}
+      />
+
+      {/* Modal Cetak Struk / Nota Digital */}
+      <ReceiptModal
+        isOpen={receiptItem !== null}
+        store={activeStore}
+        transaction={receiptItem}
+        onClose={() => setReceiptItem(null)}
       />
     </main>
   );

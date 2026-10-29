@@ -32,6 +32,7 @@ export interface StoreProfile {
   phone?: string;
   pin?: string;
   businessType: string;
+  logo?: string;
   isCloudSynced?: boolean;
   createdAt: string;
 }

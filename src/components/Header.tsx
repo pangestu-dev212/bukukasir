@@ -123,8 +123,12 @@ export function Header({
               className="flex items-center gap-2.5 text-left hover:bg-white/10 p-1.5 -ml-1 rounded-2xl transition group min-w-0 flex-1 border border-transparent hover:border-white/15"
               title="Klik untuk ganti atau tambah buku toko"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 border border-white/30 flex items-center justify-center shrink-0 shadow-md shadow-emerald-950/30">
-                <Store className="w-5 h-5 text-white drop-shadow-sm" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 border border-white/30 flex items-center justify-center shrink-0 shadow-md shadow-emerald-950/30 overflow-hidden">
+                {activeStore.logo ? (
+                  <img src={activeStore.logo} alt={activeStore.storeName} className="w-full h-full object-cover" />
+                ) : (
+                  <Store className="w-5 h-5 text-white drop-shadow-sm" />
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">

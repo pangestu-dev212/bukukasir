@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, Store, Home, Calendar, Wallet, Plus, Sparkles } from 'lucide-react';
 import { TransactionType, TransactionScope, CategoryItem } from '@/lib/types';
-import { formatRupiah } from '@/lib/formatters';
+import { formatRupiah, formatDateIndo, getTodayDateString, getYesterdayDateString } from '@/lib/formatters';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -47,7 +47,7 @@ export function TransactionModal({
     if (isOpen) {
       setAmountStr('');
       setNote('');
-      setDate(selectedDate);
+      setDate(getTodayDateString());
       setPaymentMethod('TUNAI');
       setIsAddingCategory(false);
       setNewCatName('');
@@ -60,7 +60,7 @@ export function TransactionModal({
         setCategoryName('Kulakan / Belanja Stok');
       }
     }
-  }, [isOpen, type, selectedDate]);
+  }, [isOpen, type]);
 
   if (!isOpen) return null;
 
@@ -130,17 +130,22 @@ export function TransactionModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
-        {/* Header Modal */}
+        {/* Header Modal - Luxury Gradient Theme */}
         <div
-          className={`px-5 py-4 flex items-center justify-between text-white ${
-            isIncome ? 'bg-emerald-700' : 'bg-rose-700'
+          className={`px-5 py-4 flex items-center justify-between text-white relative overflow-hidden shadow-md ${
+            isIncome
+              ? 'bg-gradient-to-r from-emerald-800 via-teal-800 to-cyan-900 border-b border-teal-500/30'
+              : 'bg-gradient-to-r from-rose-800 via-rose-900 to-pink-950 border-b border-rose-500/30'
           }`}
         >
-          <div>
-            <h2 className="text-xl font-extrabold tracking-tight">
+          {/* Ambient Glow Orbs */}
+          <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+
+          <div className="relative z-10">
+            <h2 className="text-xl font-extrabold tracking-tight drop-shadow-xs">
               {isIncome ? 'Catat Uang Masuk' : 'Catat Uang Keluar'}
             </h2>
-            <p className="text-xs text-white/80 font-medium">
+            <p className="text-xs text-teal-100/90 font-medium">
               {isIncome
                 ? 'Pemasukan usaha (toko) atau pribadi (gaji/suntikan modal)'
                 : 'Kulakan, operasional toko, atau kebutuhan pribadi/rumah'}
@@ -148,7 +153,7 @@ export function TransactionModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+            className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition relative z-10"
           >
             <X className="w-5 h-5" />
           </button>
@@ -173,8 +178,8 @@ export function TransactionModal({
                 onClick={() => handleScopeChange('BUSINESS')}
                 className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition border-2 ${
                   scope === 'BUSINESS'
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                    : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400'
+                    ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white border-teal-600 shadow-md shadow-teal-700/25'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-teal-400'
                 }`}
               >
                 <Store className="w-4 h-4" />
@@ -186,7 +191,7 @@ export function TransactionModal({
                 onClick={() => handleScopeChange('PERSONAL')}
                 className={`py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition border-2 ${
                   scope === 'PERSONAL'
-                    ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-purple-600 shadow-md shadow-purple-700/25'
                     : 'bg-white text-slate-700 border-slate-200 hover:border-purple-400'
                 }`}
               >
@@ -223,29 +228,43 @@ export function TransactionModal({
             <div className="flex flex-wrap gap-1.5 mt-2">
               <button
                 type="button"
+                onClick={() => handleQuickAdd(2000)}
+                className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
+              >
+                +2 Ribu
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickAdd(5000)}
+                className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
+              >
+                +5 Ribu
+              </button>
+              <button
+                type="button"
                 onClick={() => handleQuickAdd(10000)}
-                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
+                className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
               >
                 +10 Ribu
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickAdd(20000)}
-                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
+                className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
               >
                 +20 Ribu
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickAdd(50000)}
-                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
+                className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
               >
                 +50 Ribu
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickAdd(100000)}
-                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
+                className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold"
               >
                 +100 Ribu
               </button>
@@ -355,19 +374,48 @@ export function TransactionModal({
             />
           </div>
 
-          {/* TANGGAL TRANSAKSI */}
+          {/* TANGGAL TRANSAKSI & METODE BAYAR */}
           <div className="grid grid-cols-2 gap-2 pt-1">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                Tanggal Catatan
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                  Tanggal
+                </label>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setDate(getTodayDateString())}
+                    className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded transition ${
+                      date === getTodayDateString()
+                        ? 'bg-teal-600 text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    Hari Ini
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDate(getYesterdayDateString())}
+                    className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded transition ${
+                      date === getYesterdayDateString()
+                        ? 'bg-amber-600 text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    Kemarin
+                  </button>
+                </div>
+              </div>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 className="w-full px-3 py-2 text-xs font-bold text-slate-800 border border-slate-300 rounded-xl focus:outline-none focus:border-emerald-600"
               />
+              <span className="text-[10px] text-teal-800 font-semibold mt-1 block truncate">
+                🗓️ {formatDateIndo(date)}
+              </span>
             </div>
 
             <div>
@@ -393,8 +441,8 @@ export function TransactionModal({
               type="submit"
               className={`w-full py-3.5 px-4 rounded-2xl font-extrabold text-base text-white shadow-lg transition active:scale-[0.98] cursor-pointer ${
                 isIncome
-                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
-                  : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
+                  ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 hover:from-emerald-700 hover:to-teal-800 shadow-emerald-700/25'
+                  : 'bg-gradient-to-r from-rose-600 via-pink-600 to-rose-700 hover:from-rose-700 hover:to-pink-700 shadow-rose-700/25'
               }`}
             >
               Simpan Catatan ({formatRupiah(numericAmount)})

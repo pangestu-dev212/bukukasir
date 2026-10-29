@@ -1,4 +1,4 @@
-import { formatRupiah, formatDateRangeLabel } from './formatters';
+import { formatRupiah, formatDateRangeLabel, formatDateIndo } from './formatters';
 import { TransactionItem } from './types';
 
 export function generateWhatsAppReport(
@@ -43,7 +43,7 @@ export function generateWhatsAppReport(
     displayList.forEach((item, idx) => {
       const icon = item.type === 'IN' ? '🟢' : item.scope === 'BUSINESS' ? '🔴' : '🟡';
       const labelScope = item.type === 'IN' ? 'Masuk' : item.scope === 'BUSINESS' ? 'Toko' : 'Pribadi';
-      text += `${idx + 1}. ${icon} [${labelScope}] ${item.categoryName}: ${formatRupiah(item.amount)} (${item.date})\n`;
+      text += `${idx + 1}. ${icon} [${labelScope}] ${item.categoryName}: ${formatRupiah(item.amount)} (${formatDateIndo(item.date)})\n`;
       if (item.note) {
         text += `   _${item.note}_\n`;
       }

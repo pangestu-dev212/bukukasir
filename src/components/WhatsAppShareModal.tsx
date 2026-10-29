@@ -42,13 +42,18 @@ export function WhatsAppShareModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-150">
-        <div className="bg-emerald-700 px-5 py-3.5 text-white flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-emerald-200" />
-            <h2 className="font-bold text-base">Salin Rekap ke WhatsApp</h2>
+        {/* Header - Luxury Gradient */}
+        <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-cyan-900 px-5 py-4 text-white flex items-center justify-between relative overflow-hidden shadow-md">
+          <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+
+          <div className="flex items-center gap-2.5 relative z-10">
+            <div className="w-8 h-8 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center text-teal-200">
+              <MessageSquare className="w-4 h-4" />
+            </div>
+            <h2 className="font-extrabold text-base tracking-tight">Salin Rekap ke WhatsApp</h2>
           </div>
-          <button onClick={onClose} className="p-1 rounded-full bg-white/10 hover:bg-white/20 transition">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition relative z-10">
+            <X className="w-4 h-4" />
           </button>
         </div>
 

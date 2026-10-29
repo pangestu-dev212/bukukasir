@@ -81,31 +81,35 @@ export function DebtBookModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
       <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        {/* Header */}
-        <div className="bg-amber-600 px-5 py-4 text-white flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-amber-200" />
+        {/* Header - Luxury Warm Gradient */}
+        <div className="bg-gradient-to-r from-amber-700 via-orange-700 to-amber-900 px-5 py-4 text-white flex items-center justify-between relative overflow-hidden shadow-md">
+          <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+
+          <div className="flex items-center gap-2.5 relative z-10">
+            <div className="w-9 h-9 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center text-amber-200 shadow-sm">
+              <BookOpen className="w-5 h-5" />
+            </div>
             <div>
-              <h2 className="font-extrabold text-lg leading-tight">Buku Utang & Kasbon</h2>
-              <p className="text-xs text-amber-100 font-medium">Catatan piutang pelanggan dan utang toko</p>
+              <h2 className="font-black text-lg leading-tight tracking-tight">Buku Utang & Kasbon</h2>
+              <p className="text-xs text-amber-100/90 font-medium">Catatan piutang pelanggan dan utang toko</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-full bg-white/10 hover:bg-white/20 transition">
+          <button onClick={onClose} className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition relative z-10">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Switcher */}
-        <div className="p-3 bg-amber-50/60 border-b border-amber-200 flex gap-2">
+        <div className="p-3 bg-amber-50/70 border-b border-amber-200/80 flex gap-2">
           <button
             onClick={() => {
               setActiveTab('RECEIVABLE');
               setIsAdding(false);
             }}
-            className={`flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold transition flex items-center justify-center gap-1.5 ${
               activeTab === 'RECEIVABLE'
-                ? 'bg-amber-600 text-white shadow-sm'
-                : 'bg-white text-slate-700 hover:bg-amber-100/50'
+                ? 'bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white shadow-md shadow-amber-700/25'
+                : 'bg-white text-slate-700 hover:bg-amber-100/60 border border-slate-200'
             }`}
           >
             👥 Pelanggan Kasbon (Piutang)
@@ -115,10 +119,10 @@ export function DebtBookModal({
               setActiveTab('PAYABLE');
               setIsAdding(false);
             }}
-            className={`flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold transition flex items-center justify-center gap-1.5 ${
               activeTab === 'PAYABLE'
-                ? 'bg-amber-600 text-white shadow-sm'
-                : 'bg-white text-slate-700 hover:bg-amber-100/50'
+                ? 'bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white shadow-md shadow-amber-700/25'
+                : 'bg-white text-slate-700 hover:bg-amber-100/60 border border-slate-200'
             }`}
           >
             🏢 Utang Kita ke Suplier
